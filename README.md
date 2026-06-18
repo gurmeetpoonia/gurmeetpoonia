@@ -34,6 +34,13 @@ I enjoy:
 
 ---
 
+### 🏠 Customer Churn Prediction
+- Regression model for predicting customer churn
+- Streamlit web app deployment
+- 🔗 Live:https://customer-churn-prediction-gkjw.streamlit.app/
+- 💻 Code: https://github.com/gurmeetpoonia/Customer-Churn-Prediction
+
+---
 ## 🛠️ Tech Stack
 - Python
 - Machine Learning
