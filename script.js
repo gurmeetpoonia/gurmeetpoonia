@@ -24,15 +24,30 @@ function toggleMode() {
     document.body.classList.toggle("light");
 }
 
+// MULTI SCREENSHOT SWITCHER FUNCTION
+function switchImg(mainImgId, newSrc, thumbnailElement) {
+    // Change main display image
+    const mainImg = document.getElementById(mainImgId);
+    if(mainImg) {
+        mainImg.src = newSrc;
+    }
+    
+    // Manage Active State Classes for current card thumbnails
+    const parentContainer = thumbnailElement.parentElement;
+    parentContainer.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
+    thumbnailElement.classList.add('active');
+}
+
+// MODAL CONTROLLER
 const modal = document.getElementById("imgModal");
 const modalImg = document.getElementById("fullImg");
 
-// OPEN IMAGE (FULL SCREEN)
-document.querySelectorAll(".project-img").forEach(img => {
-    img.addEventListener("click", () => {
+// Open Modal on Project Main Image Click
+document.addEventListener("click", function(e) {
+    if(e.target && e.target.classList.contains("project-img")) {
         modal.classList.add("show");
-        modalImg.src = img.src;
-    });
+        modalImg.src = e.target.src;
+    }
 });
 
 // CLOSE BUTTON
@@ -47,8 +62,8 @@ modal.addEventListener("click", (e) => {
     }
 });
 
+// SCROLL REVEAL EFFECT
 const reveals = document.querySelectorAll(".reveal");
-
 function revealOnScroll() {
     const windowHeight = window.innerHeight;
 
