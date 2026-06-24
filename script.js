@@ -24,43 +24,98 @@ function toggleMode() {
     document.body.classList.toggle("light");
 }
 
-// MULTI SCREENSHOT SWITCHER FUNCTION
-function switchImg(mainImgId, newSrc, thumbnailElement) {
-    // Change main display image
-    const mainImg = document.getElementById(mainImgId);
-    if(mainImg) {
-        mainImg.src = newSrc;
-    }
-    
-    // Manage Active State Classes for current card thumbnails
-    const parentContainer = thumbnailElement.parentElement;
-    parentContainer.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
-    thumbnailElement.classList.add('active');
-}
+// ================= ADVANCED GALLERY & SWIPE CONTROLLER =================
+let currentProjectImages = [];
+let currentImageIndex = 0;
 
-// MODAL CONTROLLER
 const modal = document.getElementById("imgModal");
 const modalImg = document.getElementById("fullImg");
+const modalCounter = document.querySelector(".modal-counter");
+const prevBtn = document.querySelector(".prev-btn");
+const nextBtn = document.querySelector(".next-btn");
 
-// Open Modal on Project Main Image Click
-document.addEventListener("click", function(e) {
-    if(e.target && e.target.classList.contains("project-img")) {
+// Open Swipable Gallery on Project Card Click
+document.querySelectorAll(".project-card").forEach(card => {
+    card.querySelector(".img-container").addEventListener("click", function(e) {
+        currentProjectImages = JSON.parse(card.getAttribute("data-images"));
+        currentImageIndex = 0;
+        
+        updateModalImage();
         modal.classList.add("show");
-        modalImg.src = e.target.src;
-    }
+    });
 });
 
-// CLOSE BUTTON
-document.querySelector(".close").onclick = () => {
-    modal.classList.remove("show");
-};
+function updateModalImage() {
+    if (currentProjectImages.length === 0) return;
+    
+    modalImg.style.opacity = "0";
+    setTimeout(() => {
+        modalImg.src = currentProjectImages[currentImageIndex];
+        modalCounter.innerHTML = `${currentImageIndex + 1} / ${currentProjectImages.length}`;
+        modalImg.style.opacity = "1";
+    }, 150);
 
-// CLICK OUTSIDE CLOSE
+    if (currentProjectImages.length <= 1) {
+        prevBtn.style.display = "none";
+        nextBtn.style.display = "none";
+    } else {
+        prevBtn.style.display = "block";
+        nextBtn.style.display = "block";
+    }
+}
+
+function showNextImage() {
+    if (currentProjectImages.length <= 1) return;
+    currentImageIndex = (currentImageIndex + 1) % currentProjectImages.length;
+    updateModalImage();
+}
+
+function showPrevImage() {
+    if (currentProjectImages.length <= 1) return;
+    currentImageIndex = (currentImageIndex - 1 + currentProjectImages.length) % currentProjectImages.length;
+    updateModalImage();
+}
+
+nextBtn.addEventListener("click", (e) => { e.stopPropagation(); showNextImage(); });
+prevBtn.addEventListener("click", (e) => { e.stopPropagation(); showPrevImage(); });
+
+document.querySelector(".close").onclick = () => modal.classList.remove("show");
 modal.addEventListener("click", (e) => {
-    if (e.target === modal) {
+    if (e.target === modal || e.target.classList.contains("modal-wrapper")) {
         modal.classList.remove("show");
     }
 });
+
+document.addEventListener("keydown", (e) => {
+    if (!modal.classList.contains("show")) return;
+    if (e.key === "ArrowRight") showNextImage();
+    if (e.key === "ArrowLeft") showPrevImage();
+    if (e.key === "Escape") modal.classList.remove("show");
+});
+
+// MOBILE TOUCH SWIPE LOGIC
+let touchStartX = 0;
+let touchEndX = 0;
+
+const modalWrapper = document.querySelector(".modal-wrapper");
+
+modalWrapper.addEventListener("touchstart", (e) => {
+    touchStartX = e.changedTouches[0].screenX;
+}, { passive: true });
+
+modalWrapper.addEventListener("touchend", (e) => {
+    touchEndX = e.changedTouches[0].screenX;
+    handleSwipeGesture();
+}, { passive: true });
+
+function handleSwipeGesture() {
+    const swipeThreshold = 50;
+    if (touchStartX - touchEndX > swipeThreshold) {
+        showNextImage();
+    } else if (touchEndX - touchStartX > swipeThreshold) {
+        showPrevImage();
+    }
+}
 
 // SCROLL REVEAL EFFECT
 const reveals = document.querySelectorAll(".reveal");
