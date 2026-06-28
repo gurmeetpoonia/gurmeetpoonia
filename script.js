@@ -24,112 +24,143 @@ function toggleMode() {
     document.body.classList.toggle("light");
 }
 
-// ================= ADVANCED GALLERY & SWIPE CONTROLLER =================
-let currentProjectImages = [];
-let currentImageIndex = 0;
+// ================= ADVANCED GALLERY & MODAL SYSTEM =================
+let currentImages = [];
+let currentIndex = 0;
 
 const modal = document.getElementById("imgModal");
 const modalImg = document.getElementById("fullImg");
-const modalCounter = document.querySelector(".modal-counter");
-const prevBtn = document.querySelector(".prev-btn");
-const nextBtn = document.querySelector(".next-btn");
+const counter = document.querySelector(".modal-counter");
+const prev = document.querySelector(".prev-btn");
+const next = document.querySelector(".next-btn");
 
-// Open Swipable Gallery on Project Card Click
-document.querySelectorAll(".project-card").forEach(card => {
-    card.querySelector(".img-container").addEventListener("click", function(e) {
-        currentProjectImages = JSON.parse(card.getAttribute("data-images"));
-        currentImageIndex = 0;
-        
-        updateModalImage();
-        modal.classList.add("show");
+function attachGalleryListeners() {
+    document.querySelectorAll(".project-card").forEach(card => {
+        const imgContainer = card.querySelector(".img-container");
+        if (imgContainer) {
+            imgContainer.addEventListener("click", (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+
+                let dataAttr = card.getAttribute("data-images");
+                console.log("Card clicked. data-images raw value:", dataAttr);
+
+                if (dataAttr) {
+                    try {
+                        currentImages = JSON.parse(dataAttr.replace(/'/g, '"'));
+                        console.log("Parsed image list:", currentImages);
+                        currentIndex = 0;
+                        showImage();
+                        openModal();
+                    } catch (error) {
+                        console.error("इमेज डेटा रीड करने में एरर आया: ", error);
+                    }
+                } else {
+                    console.warn("No data-images attribute found on this card.");
+                }
+            });
+        } else {
+            console.warn("No .img-container found inside a .project-card", card);
+        }
     });
-});
+}
 
-function updateModalImage() {
-    if (currentProjectImages.length === 0) return;
-    
-    modalImg.style.opacity = "0";
-    setTimeout(() => {
-        modalImg.src = currentProjectImages[currentImageIndex];
-        modalCounter.innerHTML = `${currentImageIndex + 1} / ${currentProjectImages.length}`;
-        modalImg.style.opacity = "1";
-    }, 150);
+function showImage() {
+    if (currentImages && currentImages.length > 0) {
+        const path = currentImages[currentIndex];
+        modalImg.src = path;
 
-    if (currentProjectImages.length <= 1) {
-        prevBtn.style.display = "none";
-        nextBtn.style.display = "none";
+        modalImg.onload = () => console.log("Image loaded OK:", path);
+        modalImg.onerror = () => console.error("Image FAILED to load. Check spelling/case/path:", path);
+
+        counter.innerHTML = `${currentIndex + 1} / ${currentImages.length}`;
+
+        const displayStyle = currentImages.length > 1 ? "flex" : "none";
+        if (prev && next) {
+            prev.style.display = displayStyle;
+            next.style.display = displayStyle;
+        }
     } else {
-        prevBtn.style.display = "block";
-        nextBtn.style.display = "block";
+        console.warn("currentImages is empty, nothing to show.");
     }
 }
 
-function showNextImage() {
-    if (currentProjectImages.length <= 1) return;
-    currentImageIndex = (currentImageIndex + 1) % currentProjectImages.length;
-    updateModalImage();
+document.addEventListener("DOMContentLoaded", attachGalleryListeners);
+window.addEventListener("load", attachGalleryListeners);
+
+if (next && prev) {
+    next.onclick = (e) => { e.stopPropagation(); currentIndex = (currentIndex + 1) % currentImages.length; showImage(); };
+    prev.onclick = (e) => { e.stopPropagation(); currentIndex = (currentIndex - 1 + currentImages.length) % currentImages.length; showImage(); };
 }
 
-function showPrevImage() {
-    if (currentProjectImages.length <= 1) return;
-    currentImageIndex = (currentImageIndex - 1 + currentProjectImages.length) % currentProjectImages.length;
-    updateModalImage();
+function openModal() {
+    modal.style.display = "flex";
+    setTimeout(() => {
+        modal.classList.add("show");
+    }, 10); 
 }
 
-nextBtn.addEventListener("click", (e) => { e.stopPropagation(); showNextImage(); });
-prevBtn.addEventListener("click", (e) => { e.stopPropagation(); showPrevImage(); });
+const closeModal = () => {
+    modal.classList.remove("show");
+    
 
-document.querySelector(".close").onclick = () => modal.classList.remove("show");
-modal.addEventListener("click", (e) => {
-    if (e.target === modal || e.target.classList.contains("modal-wrapper")) {
-        modal.classList.remove("show");
-    }
-});
+    setTimeout(() => {
+        modal.style.display = "none";
+    }, 300);
+};
+const closeBtn = document.querySelector(".close");
+if (closeBtn) closeBtn.onclick = closeModal;
+modal.onclick = (e) => { if (e.target === modal) closeModal(); };
 
-document.addEventListener("keydown", (e) => {
+document.addEventListener("keydown", e => {
     if (!modal.classList.contains("show")) return;
-    if (e.key === "ArrowRight") showNextImage();
-    if (e.key === "ArrowLeft") showPrevImage();
-    if (e.key === "Escape") modal.classList.remove("show");
+    if (e.key === "ArrowRight" && currentImages.length > 1) next.click();
+    if (e.key === "ArrowLeft" && currentImages.length > 1) prev.click();
+    if (e.key === "Escape") closeModal();
 });
 
-// MOBILE TOUCH SWIPE LOGIC
+// Swipe variables declaration
 let touchStartX = 0;
 let touchEndX = 0;
 
 const modalWrapper = document.querySelector(".modal-wrapper");
 
-modalWrapper.addEventListener("touchstart", (e) => {
-    touchStartX = e.changedTouches[0].screenX;
-}, { passive: true });
+if (modalWrapper) {
+    modalWrapper.addEventListener("touchstart", (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
 
-modalWrapper.addEventListener("touchend", (e) => {
-    touchEndX = e.changedTouches[0].screenX;
-    handleSwipeGesture();
-}, { passive: true });
+    modalWrapper.addEventListener("touchend", (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipeGesture();
+    }, { passive: true });
+}
 
 function handleSwipeGesture() {
     const swipeThreshold = 50;
     if (touchStartX - touchEndX > swipeThreshold) {
-        showNextImage();
+        next.click();
     } else if (touchEndX - touchStartX > swipeThreshold) {
-        showPrevImage();
+        prev.click();
     }
 }
-
-// SCROLL REVEAL EFFECT
-const reveals = document.querySelectorAll(".reveal");
-function revealOnScroll() {
+// ================= SCROLL REVEAL LOGIC =================
+function revealElements() {
+    const reveals = document.querySelectorAll(".reveal");
     const windowHeight = window.innerHeight;
+    const revealPoint = 60;
 
-    reveals.forEach(el => {
-        const elementTop = el.getBoundingClientRect().top;
-
-        if (elementTop < windowHeight - 100) {
-            el.classList.add("active");
+    reveals.forEach((element) => {
+        const elementTop = element.getBoundingClientRect().top;
+        if (elementTop < windowHeight - revealPoint) {
+            element.classList.add("active");
         }
     });
 }
 
-window.addEventListener("scroll", revealOnScroll);
-window.addEventListener("load", revealOnScroll);
+window.addEventListener("scroll", revealElements);
+window.addEventListener("resize", revealElements);
+
+revealElements();
+document.addEventListener("DOMContentLoaded", revealElements);
+window.addEventListener("load", revealElements);

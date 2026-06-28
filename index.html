@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Gurmeet | ML Portfolio</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -60,6 +60,7 @@
 
   <div class="projects-container reveal">
 
+    <!-- Project 1 -->
     <div class="project-card reveal" data-images='["screenshots/titanic.png"]'>
       <div class="img-container">
         <img src="screenshots/titanic.png" class="project-img" alt="Titanic Project">
@@ -72,6 +73,7 @@
       </div>
     </div>
 
+    <!-- Project 2 -->
     <div class="project-card reveal" data-images='["screenshots/house.png"]'>
       <div class="img-container">
         <img src="screenshots/house.png" class="project-img" alt="House Price Project">
@@ -84,6 +86,7 @@
       </div>
     </div>
 
+    <!-- Project 3 -->
     <div class="project-card reveal" data-images='["screenshots/customer.png"]'>
       <div class="img-container">
         <img src="screenshots/customer.png" class="project-img" alt="Customer Churn Project">
@@ -96,7 +99,8 @@
       </div>
     </div>
 
-    <div class="project-card reveal" data-images='["screenshots/loan_approval1.png", "screenshots/loan_approval2.png"]'>
+    <!-- Project 4 -->
+    <div class="project-card reveal" data-images='["screenshots/loan_approval1.png","screenshots/loan_approval2.png"]'>
       <div class="img-container">
         <img src="screenshots/loan_approval1.png" class="project-img" alt="Loan Approval Project">
         <div class="thumbnail-bar">
@@ -112,7 +116,8 @@
       </div>
     </div>
 
-    <div class="project-card reveal" data-images='["screenshots/customer1.png", "screenshots/customer2.png", "screenshots/customer3.png"]'>
+    <!-- Project 5 -->
+    <div class="project-card reveal" data-images='["screenshots/customer1.png","screenshots/customer2.png","screenshots/customer3.png"]'>
       <div class="img-container">
         <img src="screenshots/customer1.png" class="project-img" alt="Customer Segmentation Project">
         <div class="thumbnail-bar">
@@ -131,7 +136,6 @@
 
   </div>
 </section>
-
 <section id="contact" class="contact-section reveal">
   <h2>📬 Let's Connect</h2>
   <p class="contact-text">Interested in collaborating, discussing Machine Learning, or building amazing projects together?</p>
@@ -150,13 +154,21 @@
 </footer>
 
 <div id="imgModal" class="modal">
-  <span class="close">&times;</span>
-  <button class="nav-btn prev-btn">❮</button>
-  <div class="modal-wrapper">
-    <img class="modal-content" id="fullImg" alt="Enlarged View">
-  </div>
-  <button class="nav-btn next-btn">❯</button>
-  <div class="modal-counter">1 / 1</div>
+
+    <span class="close">&times;</span>
+
+    <button class="prev-btn">&#10094;</button>
+
+    <div class="modal-wrapper">
+
+        <img id="fullImg" class="modal-content">
+
+    </div>
+
+    <button class="next-btn">&#10095;</button>
+
+    <div class="modal-counter"></div>
+
 </div>
 
 <script src="script.js"></script>
